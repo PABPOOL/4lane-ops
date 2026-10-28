@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--
+  4LANE OPS 바로가기(홈 화면 아이콘용). Apps Script 웹앱 주소에는 아이폰 아이콘을 붙일 수 없어서,
+  이 한 장짜리 페이지가 아이콘을 들고 있다가 홈 화면에서 열리면 바로 웹앱으로 넘긴다.
+  브라우저에서 그냥 열면 '홈 화면에 추가' 안내 + [바로 열기] 버튼.
+  웹앱 주소가 바뀌면 아래 OPS_URL 한 줄만 고친다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4LANE OPS</title>
+<meta name="robots" content="noindex, nofollow">  <!-- 검색에 안 뜨게 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="4LANE OPS">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon_salane_192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root { --navy: #14213D; --slate: #5B6B80; --line: #DCE3EB; --amber: #C98A2E; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: #fff; color: var(--navy); font-family: Arial, 'Apple SD Gothic Neo', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; text-align: center; }
+  img { width: 160px; height: 160px; }
+  h1 { font-size: 18px; margin: 8px 0 4px; letter-spacing: .5px; }
+  p { color: var(--slate); font-size: 14px; line-height: 1.6; margin: 6px 0; }
+  .go { display: inline-block; margin-top: 22px; background: var(--amber); color: var(--navy); font-weight: 700; text-decoration: none;
+    padding: 13px 28px; border-radius: 10px; font-size: 15px; }
+  .how { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 18px; max-width: 320px; }
+</style>
+</head>
+<body>
+  <img src="icon_salane_512.png" alt="SA LANE">
+  <h1>4LANE OPS</h1>
+  <p id="msg">운영 웹앱으로 이동하는 중…</p>
+  <a class="go" id="go" href="#">바로 열기</a>
+  <div class="how" id="how">
+    <p><b>아이폰</b> Safari 아래 공유 버튼 → <b>홈 화면에 추가</b></p>
+    <p><b>안드로이드</b> Chrome 메뉴(⋮) → <b>홈 화면에 추가</b></p>
+    <p>홈 화면 아이콘으로 열면 바로 웹앱이 떠요.</p>
+  </div>
+<script>
+  var OPS_URL = 'https://script.google.com/macros/s/AKfycbzF59Jy6CBq9xRus5EGmIFu-6Utbj4C2J2E3amJDA61Qp1PvNTqYhPZoFPJc8J7T1xYeg/exec';  // ← 배포한 웹앱 URL
+  document.getElementById('go').href = OPS_URL;
+  var standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  if (standalone) location.replace(OPS_URL);  // 홈 화면 아이콘으로 열었을 때만 자동 이동
+  else document.getElementById('msg').textContent = '홈 화면에 추가해 두고 쓰세요';
+</script>
+</body>
+</html>
