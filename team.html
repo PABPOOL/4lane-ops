@@ -41,6 +41,11 @@ h2.today{color:var(--amber)} h2.today .cnt{background:rgba(242,179,91,.16);color
 .card .ch{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);border-top:2px solid var(--c,var(--dim))}
 .lane{font-family:Lexend;font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--c,var(--ink))}
 .date{font-family:Lexend;font-size:12px;color:var(--sub)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+.grid .card{margin-bottom:0}
+.grid .card .ch{padding:8px 10px}
+.grid .task{padding:10px;gap:9px}
+.grid .task .n{font-size:14px;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
 .task{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer;user-select:none}
 .task:first-of-type{border-top:none}
 .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--dim);flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:#06202A;font-size:14px}
@@ -52,7 +57,7 @@ h2.today{color:var(--amber)} h2.today .cnt{background:rgba(242,179,91,.16);color
 .task .g{font-family:Lexend;font-size:10px;color:var(--dim);letter-spacing:.06em}
 .task .n{font-size:15px;font-weight:600}
 .task.done .n{color:var(--dim);text-decoration:line-through}
-.task .due{font-family:Lexend;font-size:11px;color:var(--sub);text-align:right;white-space:nowrap}
+.task .due{font-family:Lexend;font-size:10px;color:var(--sub);white-space:nowrap;letter-spacing:0}
 .task.late .due{color:var(--brick);font-weight:700}
 .task.today .due{color:var(--amber);font-weight:700}
 .fmt{font-size:11px;background:rgba(110,168,255,.15);color:var(--steel);border-radius:999px;padding:2px 8px;margin-left:6px;font-weight:600}
@@ -82,6 +87,7 @@ label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px;font-wei
 .chip.new{background:rgba(110,168,255,.15);color:var(--steel)}
 .chip.mate{background:rgba(242,179,91,.14);color:var(--amber)}
 .chip.wait{background:rgba(184,167,156,.14);color:var(--taupe)}
+.chip.cnt{background:rgba(61,214,195,.13);color:var(--teal);font-family:Lexend}
 .att{border:1px solid var(--line);background:transparent;color:var(--sub);border-radius:8px;padding:5px 9px;font-family:Lexend;font-size:12px;cursor:pointer}
 .att.on{background:var(--teal);border-color:var(--teal);color:#06202A;font-weight:700}
 .person .more{margin-top:8px;display:none}
@@ -97,6 +103,12 @@ label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px;font-wei
 .pc .nm{font-weight:700}
 .pc .v{font-family:Lexend;font-weight:700;font-size:24px;margin-top:4px}
 .pc .s{font-size:11px;color:var(--sub);margin-top:4px}
+.hist{display:flex;align-items:flex-end;gap:8px;height:72px;margin-top:10px;padding-top:4px;border-top:1px solid var(--line)}
+.hist .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.hist .b i{display:block;width:100%;max-width:26px;border-radius:4px 4px 0 0;background:rgba(242,179,91,.35);min-height:2px}
+.hist .b.now i{background:var(--amber)}
+.hist .b span{font-family:Lexend;font-size:9px;color:var(--dim);white-space:nowrap}
+.hist .b em{font-style:normal;font-family:Lexend;font-size:9px;color:var(--sub)}
 .rv{padding:10px 14px;border-top:1px solid var(--line)}
 .rv:first-of-type{border-top:none}
 .rv .m{font-size:11px;color:var(--sub);font-family:Lexend}
@@ -124,10 +136,10 @@ nav button.on{color:var(--cyan);border-top-color:var(--cyan)}
 <div id="veil" onclick="closeSheet()"></div>
 <div id="sheet"></div>
 <div id="toast"></div>
-<nav id="tabs"><button data-t="todo" onclick="go('todo')">할 일</button><button data-t="class" onclick="go('class')">내 수업</button><button data-t="team" onclick="go('team')">팀</button></nav>
+<nav id="tabs"><button data-t="team" onclick="go('team')">팀</button><button data-t="todo" onclick="go('todo')">할 일</button><button data-t="class" onclick="go('class')">내 수업</button></nav>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbyBu7dKiQfpyek4l8_rWdUP9qjZ2kIaaKg4qWMyyjkbGkC_nDkeQFj2lqxbebYh-ZXg4A/exec';  // ← 팀원용 배포(액세스: 모든 사용자) 주소
-var D = null, TAB = 'todo', OPEN = {}, busy = 0;
+var D = null, TAB = 'team', OPEN = {}, busy = 0;
 var LANE_C = { 'START': 'START', 'PRE-OPEN': 'PRE', 'OPEN': 'OPEN', 'CLOSED': 'CLOSED', '1stCLOSED': 'CLOSED', '4thCLOSED': 'CLOSED', 'CLOSED BUILD-UP': 'CLOSED', 'ONEDAY': 'ONEDAY' };
 var WD = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -180,8 +192,8 @@ function render() {
   if (!D) return;
   Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.className = b.getAttribute('data-t') === TAB ? 'on' : ''; });
   if (TAB === 'class') return renderClass();
-  if (TAB === 'team') return renderTeam();
-  renderTodo();
+  if (TAB === 'todo') return renderTodo();
+  renderTeam();
 }
 
 // ---------- 할 일 ----------
@@ -192,9 +204,9 @@ function taskHtml(x, i) {
   var due = x.done ? (x.late ? '늦게 완료' : '완료') : x.due < D.today ? md(x.due) + ' 지남' : x.due === D.today ? '오늘' : md(x.due) + ' (' + WD[dObj(x.due).getDay()] + ')';
   var del = x.by === D.me && !x.done ? '<button class="x" onclick="event.stopPropagation();delTask(' + i + ')" aria-label="지우기">×</button>' : '';
   return '<div class="' + cls + '"' + (ro ? '' : ' onclick="tapTask(' + i + ')"') + '><div class="box">' + (x.done ? '✓' : '') + '</div>'
-    + '<div class="lb"><div class="g">' + esc(x.zone === 'PLUS' && x.by !== '자동' ? (x.name === '팀' ? '팀 · 동우가 체크' : '추가') : x.zone) + '</div><div class="n">' + esc(x.text) + (x.fmt ? '<span class="fmt">' + esc(x.fmt) + '</span>' : '') + '</div>'
+    + '<div class="lb"><div class="g">' + esc(x.zone === 'PLUS' && x.by !== '자동' ? (x.name === '팀' ? '팀 · 동우 체크' : '추가') : x.zone) + ' · <span class="due">' + esc(due) + '</span></div><div class="n">' + esc(x.text) + (x.fmt ? '<span class="fmt">' + esc(x.fmt) + '</span>' : '') + '</div>'
     + (x.memo ? '<div class="g" style="letter-spacing:0">' + esc(x.memo) + '</div>' : '') + '</div>'
-    + '<div class="due">' + esc(due) + '</div>' + del + '</div>';
+    + del + '</div>';
 }
 // 같은 수업(LANE + 수업일)끼리 카드 하나
 function cards(list) {
@@ -204,11 +216,11 @@ function cards(list) {
     if (!g[k]) { g[k] = []; order.push(k); }
     g[k].push(x);
   });
-  return order.map(function (k) {
+  return '<div class="grid">' + order.map(function (k) {
     var xs = g[k], x0 = xs[0];
-    return '<div class="card" style="--c:' + laneColor(x0.lane) + '"><div class="ch"><span class="lane">' + esc(x0.lane) + '</span><span class="date">' + esc(x0.cdate ? '수업 ' + mdw(x0.cdate) : '') + '</span></div>'
+    return '<div class="card" style="--c:' + laneColor(x0.lane) + '"><div class="ch"><span class="lane">' + esc(x0.lane) + '</span><span class="date">' + esc(x0.cdate ? mdw(x0.cdate) : '') + '</span></div>'
       + xs.map(function (x) { return taskHtml(x, D.todos.indexOf(x)); }).join('') + '</div>';
-  }).join('');
+  }).join('') + '</div>';
 }
 function renderTodo() {
   var t = D.today, wk = addDays(t, 7 - dObj(t).getDay()), nwk = addDays(wk, 7);  // 이번 주 = 이번 일요일까지
@@ -289,12 +301,14 @@ function sessCard(s, si) {
 }
 function personHtml(s, si, p) {
   var pi = s.people.indexOf(p), id = si + '_' + pi;
-  var chips = (p.level ? '<span class="chip">' + esc(p.level) + '</span>' : '') + (p.tag === '처음' ? '<span class="chip new">처음</span>' : p.tag === '메이트' ? '<span class="chip mate">메이트</span>' : '') + (p.wait ? '<span class="chip wait">대기</span>' : '');
+  var chips = (p.level && !p.wait ? '<span class="chip">' + esc(p.level) + '</span>' : '') + (p.tag === '처음' && !(p.cnt && p.cnt.n > 1) ? '<span class="chip new">처음</span>' : p.tag === '메이트' ? '<span class="chip mate">메이트</span>' : '')
+    + (p.cnt && p.cnt.n ? '<span class="chip cnt">' + p.cnt.n + p.cnt.unit + (p.cnt.plus ? '+' : '') + '</span>' : '') + (p.wait ? '<span class="chip wait">대기</span>' : '');
   var att = p.wait ? '' : s.dates.filter(function (d, k) { return dateOf(s, k) <= D.today; }).map(function (d) {
     var on = p.att.indexOf(d) >= 0;
     return '<button class="att' + (on ? ' on' : '') + '" onclick="attend(' + si + ',' + pi + ',\'' + d + '\',' + !on + ')">' + (s.dates.length > 1 ? d : '출석') + '</button>';
   }).join(' ');
-  var more = '<div class="more">' + (p.phone ? '<div class="links"><a href="tel:' + esc(p.phone) + '">전화</a><a href="sms:' + esc(p.phone) + '">문자</a><a href="#" onclick="copyText(\'' + esc(p.phone) + '\');return false">' + esc(p.phone) + '</a></div>' : '')
+  var more = '<div class="more">' + (p.phone ? '<div class="links"><a href="tel:' + esc(p.phone) + '">전화</a><a href="sms:' + esc(p.phone) + '">문자</a><a href="#" onclick="saveContact(' + si + ',' + pi + ');return false">연락처 저장</a></div>'
+      + '<div class="links"><a href="#" onclick="copyText(\'' + esc(p.phone) + '\');return false"><span class="num">' + esc(p.phone) + '</span> 복사</a></div>' : '')
     + '<div class="row" style="margin-top:0"><input type="text" id="nt' + id + '" maxlength="200" value="' + esc(p.note) + '" placeholder="팀 비고 (예: 오른쪽 어깨 불편)"><button class="btn sm" style="flex:none" onclick="saveNote(' + si + ',' + pi + ')">저장</button></div></div>';
   return '<div class="person' + (OPEN[id] ? ' open' : '') + '" id="p' + id + '"><div class="top"><div class="nm" onclick="toggleP(\'' + id + '\')">' + esc(p.name) + chips + '</div>' + att + '</div>'
     + (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '') + more + '</div>';
@@ -330,16 +344,33 @@ function saveReview(si) {
     toast('회고를 남겼어요');
   });
 }
+// 연락처 저장: vCard(.vcf)를 열면 아이폰은 '새로운 연락처 생성', 안드로이드는 연락처 앱으로 연다
+function saveContact(si, pi) {
+  var s = D.sessions[si], p = s.people[pi];
+  var v = function (t) { return String(t).replace(/([\\,;])/g, '\\$1'); };
+  var card = ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + v(p.name) + ';;;;', 'FN:' + v(p.name), 'ORG:4LANE', 'TEL;TYPE=CELL:' + p.phone,
+    'NOTE:' + v('4LANE ' + s.label + ' ' + md(s.ymd)), 'END:VCARD'].join('\r\n');
+  var blob = new Blob([card], { type: 'text/vcard;charset=utf-8' }), url = URL.createObjectURL(blob);
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { location.href = url; return; }
+  var a = document.createElement('a'); a.href = url; a.download = p.name + '.vcf'; document.body.appendChild(a); a.click(); a.remove();
+  toast('연락처 파일을 열면 저장할 수 있어요');
+}
 function copyText(t) { try { navigator.clipboard.writeText(t).then(function () { toast('복사했어요'); }); } catch (e) { prompt('복사하세요', t); } }
 
 // ---------- 팀 ----------
+function histHtml(hs) {
+  if (!hs || !hs.length) return '';
+  return '<div class="hist">' + hs.map(function (x, i) {
+    return '<div class="b' + (i === hs.length - 1 ? ' now' : '') + '"><em>' + (x.pct == null ? '-' : x.pct) + '</em><i style="height:' + (x.pct == null ? 2 : Math.max(x.pct * 0.44, 2)) + 'px"></i><span>' + esc(x.m) + '</span></div>';
+  }).join('') + '</div>';
+}
 function renderTeam() {
   var h = '<h2>이번 달 팀 보드</h2><div class="board">' + D.board.map(function (b) {
     var me = b.name === D.me;
     return '<div class="pc' + (me ? ' me' : '') + '"><div class="nm">' + esc(b.name) + '</div><div class="v">' + (b.pct == null ? '-' : b.pct + '%') + '</div>'
-      + '<div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div><div class="s">연속 ' + b.streak + (me && b.onTime != null ? ' · 정시율 ' + b.onTime + '%' : '') + '</div></div>';
+      + '<div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div><div class="s">연속 ' + b.streak + (me && b.onTime != null ? ' · 정시율 ' + b.onTime + '%' : '') + '</div>' + histHtml(b.hist) + '</div>';
   }).join('') + '</div>';
-  h += '<p style="font-size:12px;color:var(--dim);margin:8px 2px 0">진행률 = 이번 달 마감이 지난 할 일 중 끝낸 비율 · 연속 = 마감 안에 끝낸 할 일이 이어진 수. 정시율은 나만 보여요.</p>';
+  h += '<p style="font-size:12px;color:var(--dim);margin:8px 2px 0">막대 = 최근 3개월 진행률 · 진행률 = 그 달 마감이 지난 할 일 중 끝낸 비율 · 연속 = 마감 안에 끝낸 할 일이 이어진 수. 정시율은 나만 보여요.</p>';
   h += '<h2>회고</h2>' + (D.reviews.length ? '<div class="card">' + D.reviews.map(function (r) {
     return '<div class="rv"><div class="m">' + esc(r.name + ' · ' + r.lane + ' ' + md(r.cdate)) + '</div><div>' + esc(r.text) + '</div></div>';
   }).join('') + '</div>' : '<div class="empty">아직 회고가 없어요. 내 수업 탭에서 수업마다 한 줄 남길 수 있어요</div>');
