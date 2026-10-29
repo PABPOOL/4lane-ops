@@ -360,7 +360,8 @@ function personHtml(s, si, p) {
   var pi = s.people.indexOf(p), id = si + '_' + pi;
   var chips = (p.level && !p.wait ? '<span class="chip">' + esc(p.level) + '</span>' : '') + (p.tag === '처음' && !(p.cnt && p.cnt.n > 1) ? '<span class="chip new">처음</span>' : p.tag === '메이트' ? '<span class="chip mate">메이트</span>' : '')
     + (p.cnt && p.cnt.n ? '<span class="chip cnt">' + p.cnt.n + p.cnt.unit + (p.cnt.plus ? '+' : '') + '</span>' : '') + (p.wait ? '<span class="chip wait">대기</span>' : '');
-  var att = p.wait ? '' : s.dates.filter(function (d, k) { return dateOf(s, k) <= D.today; }).map(function (d) {
+  // 출석 버튼은 뺌(10/30 동우: 입장료를 미리 내서 당일 결석도 결제는 그대로, 전날 취소는 이월로 명단에 반영 → 팀원 일만 늘어남). 서버 attend는 남겨 둠
+  var att = '' && s.dates.filter(function (d, k) { return dateOf(s, k) <= D.today; }).map(function (d) {
     var on = p.att.indexOf(d) >= 0;
     return '<button class="att' + (on ? ' on' : '') + '" onclick="attend(' + si + ',' + pi + ',\'' + d + '\',' + !on + ')">' + (s.dates.length > 1 ? d : '출석') + '</button>';
   }).join(' ');
