@@ -42,7 +42,8 @@ h2.today{color:var(--amber)} h2.today .cnt{background:rgba(242,179,91,.16);color
 .card .ch{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);border-top:2px solid var(--c,var(--dim))}
 .lane{font-family:Lexend;font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--c,var(--ink))}
 .date{font-family:Lexend;font-size:12px;color:var(--sub)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+.grid{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.grid .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
 .grid .card{margin-bottom:0}
 .grid .card .ch{padding:8px 10px}
 .grid .task{padding:10px;gap:9px}
@@ -75,6 +76,7 @@ h2.today{color:var(--amber)} h2.today .cnt{background:rgba(242,179,91,.16);color
 .btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
 .btn:disabled{opacity:.5}
 input[type=text],input[type=date],textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(6,11,23,.6);color:var(--ink);font-family:inherit;color-scheme:dark}
+input[type=date]{display:block;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;min-height:44px;text-align:left}
 input:focus,textarea:focus{outline:2px solid var(--cyan);border-color:var(--cyan)}
 label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px;font-weight:700}
 .form{padding:4px 14px 14px}
@@ -255,13 +257,17 @@ function cards(list) {
     if (!g[k]) { g[k] = []; order.push(k); }
     g[k].push(x);
   });
-  return '<div class="grid">' + order.map(function (k) {
+  // 두 줄에 나눠 담되, 카드 높이(할 일 수)가 덜 찬 쪽에 다음 카드를 넣는다 → 빈칸 없이 날짜 순서 유지(10/30 동우)
+  var html = order.map(function (k) {
     var xs = g[k], x0 = xs[0];
     var pn = x0.lane !== 'TEAM' && x0.cdate ? prevNext(x0.lane, x0.cdate) : null;
     return '<div class="card" style="--c:' + laneColor(x0.lane) + '"><div class="ch"><span class="lane">' + esc(x0.lane) + '</span><span class="date">' + esc(x0.cdate ? mdw(x0.cdate) : '') + '</span></div>'
       + (pn && !xs[0].done ? '<div class="prevnx">지난번 바꿀 것 · ' + esc(pn.next) + '</div>' : '')
       + xs.map(function (x) { return taskHtml(x, D.todos.indexOf(x)); }).join('') + '</div>';
-  }).join('') + '</div>';
+  });
+  var cols = [[], []], hgt = [0, 0];
+  order.forEach(function (k, i) { var c = hgt[0] <= hgt[1] ? 0 : 1; cols[c].push(html[i]); hgt[c] += 1.2 + g[k].length + (g[k][0].lane !== 'TEAM' ? 0.6 : 0); });
+  return '<div class="grid"><div class="col">' + cols[0].join('') + '</div><div class="col">' + cols[1].join('') + '</div></div>';
 }
 function renderTodo() {
   var t = D.today, wk = addDays(t, 7 - dObj(t).getDay()), nwk = addDays(wk, 7);  // 이번 주 = 이번 일요일까지
