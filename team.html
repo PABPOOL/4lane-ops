@@ -380,7 +380,7 @@ function renderClass() {
   var up = D.sessions.filter(function (s) { return !s.past; }), past = D.sessions.filter(function (s) { return s.past; }).reverse();
   var h = '<h2>앞으로 있을 수업 <span class="cnt">' + up.length + '</span></h2>' + (up.length ? up.map(function (s) { return sessCard(s, D.sessions.indexOf(s)); }).join('') : '<div class="empty">신청이 들어온 수업이 아직 없어요</div>');
   if (past.length) h += '<h2>지난 2주</h2>' + past.map(function (s) { return sessCard(s, D.sessions.indexOf(s)); }).join('');
-  h += '<p style="font-size:12px;color:var(--dim);text-align:center;margin-top:16px">이름을 누르면 연락처·비고. 전화번호는 앞으로 있을 수업만 보여요.</p>';
+  h += '<p style="font-size:12px;color:var(--dim);text-align:center;margin-top:16px">이름을 누르면 연락처·비고. 전화번호는 지난 2주 수업까지 보여요(코멘트 보낼 때).</p>';
   $('app').innerHTML = h;
 }
 function attend(si, pi, d, on) {
@@ -433,7 +433,8 @@ function who(n) { return '<span class="dot" style="--pc:' + pc(n) + '"></span>';
 function renderTeam() {
   var T = D.team || { meetings: [], agenda: [], events: [], decisions: [] }, t = D.today, h = '';
   // 1. 진행률 보드
-  h += '<div class="sec" style="margin-top:14px"><h2>이번 달 팀 보드</h2></div><div class="board">' + D.board.map(function (b) {
+  var bd = D.board.filter(function (b) { return b.name === D.me; }).concat(D.board.filter(function (b) { return b.name !== D.me; }));  // 나 먼저, 나머지는 합류 순(정현·가을·대규·다린)
+  h += '<div class="sec" style="margin-top:14px"><h2>이번 달 팀 보드</h2></div><div class="board">' + bd.map(function (b) {
     var me = b.name === D.me;
     return '<div class="pc' + (me ? ' me' : '') + '" style="--pc:' + pc(b.name) + '"><div class="nm">' + who(b.name) + esc(b.name) + '</div><div class="v">' + (b.pct == null ? '-' : b.pct + '%') + '</div>'
       + '<div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div><div class="s">연속 ' + b.streak + (me && b.onTime != null ? ' · 정시율 ' + b.onTime + '%' : '') + '</div>' + histHtml(b.hist) + '</div>';
