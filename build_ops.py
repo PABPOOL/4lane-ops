@@ -1,7 +1,7 @@
 # 운영 웹앱 화면(자동신청.gs의 APP_HTML)을 github.io 페이지(index.html)로 만든다. 2026-10-30
 # script.google.com 위에서 열면 맨 위에 구글 회색 안내 띠가 붙는다 → 화면은 여기서 그리고, 데이터만 팀용 배포(doPost 'ops')에 관리자 키로 묻는다.
 # 화면 코드를 고치면: python3 build_ops.py → git push. 서버 코드는 전처럼 편집기에 붙여넣고 배포 두 개 새 버전.
-# 키가 없으면(예전 홈 화면 아이콘) 예전처럼 Apps Script 웹앱으로 넘긴다.
+# 키가 없으면 안내 + 예전 웹앱 링크. manifest는 넣지 않는다(아이폰이 홈 화면 시작 주소를 키 없는 주소로 잡음).
 import pathlib
 here = pathlib.Path(__file__).parent
 gs = (here.parent / 'apps_script' / '자동신청.gs').read_text()
@@ -19,14 +19,17 @@ head = """<meta charset="utf-8">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="icon" type="image/png" href="icon_salane_192.png?v=3">
-<link rel="manifest" href="manifest.webmanifest">
 <script>
-// 관리자 키: ?p=키로 한 번 열면 이 기기에 기억. 키가 없으면 예전 Apps Script 웹앱으로
+// 관리자 키: ?p=키로 한 번 열면 이 기기에 기억(홈 화면 앱은 사파리와 저장소가 따로라 주소의 키가 기준)
 var OPS_API = '%s';
 var OPS_URL = 'https://script.google.com/macros/s/AKfycbzF59Jy6CBq9xRus5EGmIFu-6Utbj4C2J2E3amJDA61Qp1PvNTqYhPZoFPJc8J7T1xYeg/exec';
 var OPS_KEY = (location.search.match(/[?&]p=([^&]+)/) || [])[1] || '';
 try { if (OPS_KEY) localStorage.setItem('ops-key', OPS_KEY); else OPS_KEY = localStorage.getItem('ops-key') || ''; } catch (e) {}
-if (!OPS_KEY) location.replace(OPS_URL);
+if (!OPS_KEY) document.addEventListener('DOMContentLoaded', function () {  // 키 없이 열림 → 조용히 구글로 넘기지 않고 알려준다
+  document.body.innerHTML = '<div style="padding:60px 24px;text-align:center;font-family:Arial;color:#8EA1BC;line-height:1.7">'
+    + '관리자 링크(?p=키)로 열어주세요.<br>홈 화면 아이콘은 그 링크를 사파리에서 연 화면에서 추가해야 해요.<br><br>'
+    + '<a href="' + OPS_URL + '" style="color:#38D3EE">예전 웹앱으로 열기</a></div>';
+});
 // google.script.run 흉내: 같은 함수 이름을 doPost 'ops'로 보낸다
 (function () {
   function runner(ok, fail) {
