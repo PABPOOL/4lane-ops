@@ -282,7 +282,7 @@ function renderTodo() {
   var b = myBoard();
   var h = '<div class="sum"><div class="k"><div class="t">이번 달 진행률</div><div class="v">' + (b.pct == null ? '-' : b.pct + '%') + '</div><div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div></div>'
     + '<div class="k"><div class="t">연속 기록</div><div class="v">' + (b.streak || 0) + '</div><div class="t">마감 안에 끝낸 할 일</div></div>'
-    + '<div class="k"><div class="t">정시율 (나만)</div><div class="v">' + (b.onTime == null ? '-' : b.onTime + '%') + '</div><div class="t">이번 달</div></div></div>';
+    + '<div class="k"><div class="t">정시율 (나만)</div><div class="v" style="color:var(--' + (b.onTime == null ? 'ink' : b.onTime >= 90 ? 'teal' : b.onTime >= 70 ? 'amber' : 'brick') + ')">' + (b.onTime == null ? '-' : b.onTime + '%') + '</div><div class="t">이번 달</div></div></div>';
   sec.forEach(function (s, i) {
     if (!s[2].length && i !== 1) return;
     h += '<h2 class="' + s[0] + '">' + s[1] + ' <span class="cnt">' + s[2].length + '</span></h2>' + (s[2].length ? cards(s[2]) : '<div class="empty">오늘 마감 없어요</div>');
@@ -430,6 +430,8 @@ function histHtml(hs) {
     return '<div class="b' + (i === hs.length - 1 ? ' now' : '') + '"><em>' + (x.pct == null ? '-' : x.pct) + '</em><i style="height:' + (x.pct == null ? 2 : Math.max(x.pct * 0.44, 2)) + 'px"></i><span>' + esc(x.m) + '</span></div>';
   }).join('') + '</div>';
 }
+// 정시율은 크기 그대로, 색만 눈에 띄게: 90% 이상 틸 · 70% 이상 앰버 · 그 아래 브릭(10/30 동우: 마감 지나서 하는 사람이 자극받게)
+function otHtml(v) { return '<b class="num" style="color:var(--' + (v >= 90 ? 'teal' : v >= 70 ? 'amber' : 'brick') + ')">' + v + '%</b>'; }
 function who(n) { return '<span class="dot" style="--pc:' + pc(n) + '"></span>'; }
 function renderTeam() {
   var T = D.team || { meetings: [], agenda: [], events: [], decisions: [] }, t = D.today, h = '';
@@ -438,7 +440,7 @@ function renderTeam() {
   h += '<div class="sec" style="margin-top:14px"><h2>이번 달 팀 보드</h2></div><div class="board">' + bd.map(function (b) {
     var me = b.name === D.me;
     return '<div class="pc' + (me ? ' me' : '') + '" style="--pc:' + pc(b.name) + '"><div class="nm">' + who(b.name) + esc(b.name) + '</div><div class="v">' + (b.pct == null ? '-' : b.pct + '%') + '</div>'
-      + '<div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div><div class="s">연속 ' + b.streak + (me && b.onTime != null ? ' · 정시율 ' + b.onTime + '%' : '') + '</div>' + histHtml(b.hist) + '</div>';
+      + '<div class="prog"><i style="width:' + (b.pct || 0) + '%"></i></div><div class="s">연속 ' + b.streak + (me && b.onTime != null ? ' · 정시율 ' + otHtml(b.onTime) : '') + '</div>' + histHtml(b.hist) + '</div>';
   }).join('') + '</div>';
   h += '<p style="font-size:12px;color:var(--dim);margin:8px 2px 0">막대 = 최근 3개월 진행률 · 진행률 = 그 달 마감이 지난 할 일 중 끝낸 비율 · 연속 = 마감 안에 끝낸 할 일이 이어진 수. 정시율은 나만 보여요.</p>';
   // 2. 회고 레인
