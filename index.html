@@ -421,7 +421,7 @@ function renderTeam() {
   h += '<h2>이번 달 팀 보드</h2><div class="kpis">' + TM.board.map(function (b) {
     return '<div class="kpi" style="' + pcol(b.name) + ';--c:var(--pc);border-top-color:var(--pc)"><div class="t" style="display:flex;align-items:center;gap:6px">' + tdot(b.name) + esc(b.name) + (b.late ? ' · <b style="color:var(--brick)">밀린 ' + b.late + '</b>' : '') + '</div>'
       + '<div class="v" style="color:var(--pc)">' + nv(b.pct, '%') + ' <small style="font-size:12px;color:var(--sky)">' + (b.done || 0) + '/' + (b.total || 0) + '</small></div>'
-      + '<div class="s">연속 ' + (b.streak || 0) + ' · 정시율 ' + nv(b.onTime, '%') + '</div>' + tmHist(b.hist) + '</div>';
+      + '<div class="s">연속 ' + (b.streak || 0) + ' · 정시율 ' + (b.onTime == null ? '-' : '<b class="num" style="color:var(--' + (b.onTime >= 90 ? 'teal' : b.onTime >= 70 ? 'amber' : 'brick') + ')">' + b.onTime + '%</b>') + '</div>' + tmHist(b.hist) + '</div>';
   }).join('') + '</div>';
   // 2. 회고 레인
   var lanes = {}, order = [];
