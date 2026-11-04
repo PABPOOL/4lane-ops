@@ -23,7 +23,7 @@
 :root{--bg:#060B17;--glass:rgba(17,30,56,.66);--edge:rgba(120,170,255,.13);--line:rgba(140,175,230,.14);--mist:rgba(140,175,230,.10);
 --ink:#E6EDF7;--sub:#8EA1BC;--dim:#5E7290;--cyan:#38D3EE;--amber:#F2B35B;--teal:#3DD6C3;--ember:#FF8A4C;--brick:#FF6B76;--steel:#6EA8FF;--taupe:#B8A79C;
 --p정현:#6EA8FF;--p가을:#F2B35B;--p대규:#3DD6C3;--p다린:#B693FF;--p동우:#38D3EE;--p팀:#8EA1BC;
---START:#4F8BFF;--PRE:#8F9DFF;--OPEN:#FF5C78;--CLOSED:#A8BAD8;--ONEDAY:#F2B35B;--ABOVE:#B693FF}
+--START:#4F8BFF;--PRE:#8F9DFF;--OPEN:#FF5C78;--CLOSED:#A8BAD8;--ONEDAY:#F2B35B;--JUNIOR:#FF8A4C;--ABOVE:#B693FF}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,'Apple SD Gothic Neo',sans-serif;font-size:14px}
 body{background:radial-gradient(1200px 500px at 50% -200px,rgba(56,120,220,.18),transparent) var(--bg);min-height:100vh;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
@@ -180,7 +180,7 @@ select{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbyBu7dKiQfpyek4l8_rWdUP9qjZ2kIaaKg4qWMyyjkbGkC_nDkeQFj2lqxbebYh-ZXg4A/exec';  // ← 팀원용 배포(액세스: 모든 사용자) 주소
 var D = null, TAB = 'team', OPEN = {}, busy = 0;
-var LANE_C = { 'TEAM': 'ABOVE', 'START': 'START', 'PRE-OPEN': 'PRE', 'OPEN': 'OPEN', 'CLOSED': 'CLOSED', '1stCLOSED': 'CLOSED', '4thCLOSED': 'CLOSED', 'CLOSED BUILD-UP': 'CLOSED', 'ONEDAY': 'ONEDAY' };
+var LANE_C = { 'TEAM': 'ABOVE', 'START': 'START', 'PRE-OPEN': 'PRE', 'OPEN': 'OPEN', 'CLOSED': 'CLOSED', '1stCLOSED': 'CLOSED', '4thCLOSED': 'CLOSED', 'CLOSED BUILD-UP': 'CLOSED', 'ONEDAY': 'ONEDAY', 'JUNIOR': 'JUNIOR' };
 var WD = ['일', '월', '화', '수', '목', '금', '토'];
 
 function $(id) { return document.getElementById(id); }
