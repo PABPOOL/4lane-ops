@@ -454,7 +454,8 @@ function renderTeam() {
   }).join('') + '</div>';
 
   // 3. 다가오는 것
-  var next = T.meetings.filter(function (m) { return m.date >= t && m.state !== '끝'; })[0];
+  var fin = function (m) { return m.state === '끝' || m.state === '정리'; };
+  var next = T.meetings.filter(function (m) { return m.date >= t && !fin(m); })[0];
   var ag = T.agenda.filter(function (a) { return a.state !== '논의됨' && (!a.meet || !next || a.meet === next.key); });
   h += '<div class="sec"><h2>다가오는 것</h2>' + (D.admin ? '<button class="add" onclick="meetForm(\'회의\')">+ 회의</button>' : '') + '</div>';
   h += '<div class="card"><div class="meet">' + (next ? '<div class="w">' + esc(mdw(next.date)) + ' · 다음 팀 회의</div><div class="t">' + esc(next.text) + '</div>' : '<div class="t" style="color:var(--sub);font-weight:400">다음 회의 날짜 미정</div>') + '</div>'
@@ -466,27 +467,30 @@ function renderTeam() {
     }).join('')
     + '<div class="ag" style="justify-content:center"><button class="add" onclick="meetForm(\'안건\',\'' + (next ? next.key : '') + '\')">+ 같이 얘기해요 (안건)</button></div></div>';
   // 잡혀 있는 건 몇 달 뒤라도 다 보여준다(회의·일정이 많지 않다)
-  var evs = T.events.concat(T.meetings.filter(function (m) { return m.date >= t && m.state !== '끝' && (!next || m.key !== next.key); }))
+  var evs = T.events.concat(T.meetings.filter(function (m) { return m.date >= t && !fin(m) && (!next || m.key !== next.key); }))
     .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   h += '<div class="card">' + (evs.length ? evs.map(evHtml).join('') : '<div class="ev" style="justify-content:center;color:var(--sub)">잡힌 팀 일정 없음</div>')
     + (D.admin ? '<div class="ag" style="justify-content:center"><button class="add" onclick="meetForm(\'일정\')">+ 팀 일정</button></div>' : '') + '</div>';
 
-  // 4. 회의 → 실행
-  var done = T.meetings.filter(function (m) { return m.date < t || m.state === '끝'; }).reverse();
-  h += '<div class="sec"><h2>회의 → 실행</h2></div>';
-  if (!done.length) h += '<div class="empty">회의가 끝나면 정한 것이 담당자 할 일로 들어가고, 여기서 실행을 같이 봐요</div>';
-  done.forEach(function (m, i) {
-    var ds = T.decisions.filter(function (d) { return d.meet === m.key; });
-    var ok = ds.filter(function (d) { return d.done; }).length;
-    var card = '<div class="card"><div class="mh"><span><b>' + esc(m.text) + '</b> · <span class="num">' + esc(md(m.date)) + '</span></span><span class="num" style="color:' + (ds.length && ok === ds.length ? 'var(--teal)' : 'var(--sub)') + '">실행 ' + ok + '/' + ds.length + '</span></div>'
+  // 4. 회의 → 실행. 실행할 게 남은 회의만 펼치고, 다 끝났거나 동우가 [정한 것 없음]으로 정리한 회의는 '지난 회의'로 접는다(11/6)
+  var done = T.meetings.filter(function (m) { return m.date < t || fin(m); }).reverse();
+  var dsOf = function (m) { return T.decisions.filter(function (d) { return d.meet === m.key; }); };
+  var closed = function (m) { var ds = dsOf(m); return m.state === '정리' || (ds.length > 0 && ds.every(function (d) { return d.done; })); };
+  var meetCard = function (m) {
+    var ds = dsOf(m), ok = ds.filter(function (d) { return d.done; }).length;
+    return '<div class="card"><div class="mh"><span><b>' + esc(m.text) + '</b> · <span class="num">' + esc(md(m.date)) + '</span></span><span class="num" style="color:' + (ds.length && ok === ds.length ? 'var(--teal)' : 'var(--sub)') + '">' + (ds.length ? '실행 ' + ok + '/' + ds.length : m.state === '정리' ? '정한 것 없음' : '실행 0/0') + '</span></div>'
       + (ds.length ? ds.map(function (d) {
         var st = d.done ? '<span class="st ok">✓ 했어요</span>' : d.due < t ? '<span class="st late">' + esc(md(d.due)) + ' 지남</span>' : '<span class="st go">' + esc(md(d.due)) + '까지</span>';
         return '<div class="dc">' + who(d.who) + '<div class="tx">' + esc(d.text) + '<small>' + esc(d.who) + '</small></div>' + st
           + (D.admin ? '<button class="x" onclick="meetDel(\'' + d.key + '\')">×</button>' : '') + '</div>';
-      }).join('') : '<div class="dc" style="color:var(--sub);font-size:13px">정한 것 아직 없음</div>')
-      + (D.admin ? '<div class="ag" style="justify-content:center"><button class="add" onclick="meetForm(\'결정\',\'' + m.key + '\')">+ 정한 것</button></div>' : '') + '</div>';
-    h += i < 2 ? card : (i === 2 ? '<details><summary>지난 회의 ' + (done.length - 2) + '개</summary>' : '') + card + (i === done.length - 1 ? '</details>' : '');
-  });
+      }).join('') : (m.state === '정리' ? '' : '<div class="dc" style="color:var(--sub);font-size:13px">정한 것 아직 없음</div>'))
+      + (D.admin && !closed(m) ? '<div class="ag" style="justify-content:center"><button class="add" onclick="meetForm(\'결정\',\'' + m.key + '\')">+ 정한 것</button></div>' : '') + '</div>';
+  };
+  var open = done.filter(function (m) { return !closed(m); }), past = done.filter(closed);
+  h += '<div class="sec"><h2>회의 → 실행</h2></div>';
+  if (!open.length) h += '<div class="empty">' + (done.length ? '실행할 게 남은 회의가 없어요 👍' : '회의가 끝나면 정한 것이 담당자 할 일로 들어가고, 여기서 실행을 같이 봐요') + '</div>';
+  h += open.map(meetCard).join('');
+  if (past.length) h += '<details><summary>지난 회의 ' + past.length + '개</summary>' + past.map(meetCard).join('') + '</details>';
 
   $('app').innerHTML = h;
 }
