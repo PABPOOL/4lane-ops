@@ -86,6 +86,7 @@ label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px;font-wei
 .person:first-of-type{border-top:none}
 .person .top{display:flex;align-items:center;gap:8px}
 .person .nm{font-weight:700;font-size:15px;flex:1;min-width:0;cursor:pointer}
+.person .guard{font-weight:400;font-size:12px;color:var(--sub);margin-left:6px}
 .chip{display:inline-block;font-size:11px;padding:2px 7px;border-radius:10px;background:var(--mist);color:var(--sub);font-weight:700;margin-left:4px;vertical-align:1px}
 .chip.new{background:rgba(110,168,255,.15);color:var(--steel)}
 .chip.mate{background:rgba(242,179,91,.14);color:var(--amber)}
@@ -368,7 +369,7 @@ function personHtml(s, si, p) {
   var more = '<div class="more">' + (p.phone ? '<div class="links"><a href="tel:' + esc(p.phone) + '">전화</a><a href="sms:' + esc(p.phone) + '">문자</a><a href="#" onclick="saveContact(' + si + ',' + pi + ');return false">연락처 저장</a></div>'
       + '<div class="links"><a href="#" onclick="copyText(\'' + esc(p.phone) + '\');return false"><span class="num">' + esc(p.phone) + '</span> 복사</a></div>' : '')
     + '<div class="row" style="margin-top:0"><input type="text" id="nt' + id + '" maxlength="200" value="' + esc(p.note) + '" placeholder="팀 비고 (예: 오른쪽 어깨 불편)"><button class="btn sm" style="flex:none" onclick="saveNote(' + si + ',' + pi + ')">저장</button></div></div>';
-  return '<div class="person' + (OPEN[id] ? ' open' : '') + '" id="p' + id + '"><div class="top"><div class="nm" onclick="toggleP(\'' + id + '\')">' + esc(p.name) + chips + '</div>' + att + '</div>'
+  return '<div class="person' + (OPEN[id] ? ' open' : '') + '" id="p' + id + '"><div class="top"><div class="nm" onclick="toggleP(\'' + id + '\')">' + (p.kids ? esc(p.kids.join(' · ')) + '<span class="guard">보호자 ' + esc(p.name) + '</span>' : esc(p.name)) + chips + '</div>' + att + '</div>'
     + (p.note ? '<div class="note">' + esc(p.note) + '</div>' : '') + more + '</div>';
 }
 // 클로즈는 dates가 'M/D' 4개 → 그 해 날짜로
@@ -413,11 +414,12 @@ function saveReview(si) {
 function saveContact(si, pi) {
   var s = D.sessions[si], p = s.people[pi];
   var v = function (t) { return String(t).replace(/([\\,;])/g, '\\$1'); };
-  var card = ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + v(p.name) + ';;;;', 'FN:' + v(p.name), 'ORG:4LANE', 'TEL;TYPE=CELL:' + p.phone,
+  var nm = p.kids ? p.name + ' (' + p.kids.join('·') + ' 보호자)' : p.name;  // 주니어는 보호자 번호
+  var card = ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + v(nm) + ';;;;', 'FN:' + v(nm), 'ORG:4LANE', 'TEL;TYPE=CELL:' + p.phone,
     'NOTE:' + v('4LANE ' + s.label + ' ' + md(s.ymd)), 'END:VCARD'].join('\r\n');
   var blob = new Blob([card], { type: 'text/vcard;charset=utf-8' }), url = URL.createObjectURL(blob);
   if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { location.href = url; return; }
-  var a = document.createElement('a'); a.href = url; a.download = p.name + '.vcf'; document.body.appendChild(a); a.click(); a.remove();
+  var a = document.createElement('a'); a.href = url; a.download = nm + '.vcf'; document.body.appendChild(a); a.click(); a.remove();
   toast('연락처 파일을 열면 저장할 수 있어요');
 }
 function copyText(t) { try { navigator.clipboard.writeText(t).then(function () { toast('복사했어요'); }); } catch (e) { prompt('복사하세요', t); } }
