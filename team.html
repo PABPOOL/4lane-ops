@@ -17,6 +17,14 @@
 <meta name="theme-color" content="#060B17">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="icon" type="image/png" href="icon_salane_192.png?v=3">
+<script>
+// 안드로이드만: 매니페스트 + 서비스워커 → 크롬 '앱 설치'로 주소창 없이 열림(안드로이드는 앱과 크롬이 저장소를 같이 써서 키가 남음).
+// 아이폰엔 붙이지 않는다(홈 화면 시작 주소가 키 없는 주소로 잡히고 저장소가 따로라 키를 잃음, 10/30 경험). 2026-11-16
+if (/Android/i.test(navigator.userAgent)) {
+  document.write('<link rel="manifest" href="team.webmanifest?v=1">');
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* OPS 다크(design/컬러_가이드.md): 바탕 #060B17, 유리 카드, 포인트 시안, 앰버는 진행률에만, 발광 없음 */
