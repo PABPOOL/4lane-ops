@@ -235,6 +235,7 @@ html.dark .seg button.on{background:rgba(56,211,238,.14);color:var(--cyan);borde
 html.dark .hint{background:rgba(56,211,238,.07);border:1px solid rgba(56,211,238,.2)}
 html.dark #tabs{background:rgba(6,11,23,.85);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top-color:var(--line)}
 html.dark #tabs button.on{color:var(--cyan);border-top-color:var(--cyan)}
+.vct{font-family:Lexend,Arial;font-size:11px;font-weight:600;color:var(--c,var(--steel));margin-left:6px;white-space:nowrap}.vct small{font-weight:400;color:var(--sky);font-size:10.5px}
 /* ---- 보드(동우 전용, 2026-11-19, hq/board/mockup.html v5) ---- */
 body.wide main{max-width:1500px}
 .brd{display:grid;grid-template-columns:220px minmax(0,1fr) 220px;gap:12px;align-items:start}
@@ -282,7 +283,7 @@ html:not(.dark) .brd .bc{background:#fff;border-color:var(--line)}
 .brd .stamp{font-size:10.5px;color:var(--sky);text-align:right;margin:-4px 0 8px;font-family:Lexend}
 @media(max-width:1100px){.brd{grid-template-columns:minmax(0,1fr)}.brd .col.c{order:1}.brd .col.r{order:2}.brd .col.l{order:3}}
 .brd .gg div{cursor:pointer;border-radius:10px}.brd .gg div:active{background:rgba(56,211,238,.08)}
-@media(max-width:640px){.brd .gg{grid-template-columns:repeat(2,1fr)}.brd .dt{left:8px;right:8px;width:auto;top:auto;bottom:8px}}
+@media(max-width:640px){.brd .gg{grid-template-columns:repeat(4,1fr);gap:4px}.brd .gg div{flex-direction:column;gap:3px}.brd .gg svg{width:48px;height:48px}.brd .gg span{font-size:9.5px;text-align:center;line-height:1.25}.brd .dt{left:8px;right:8px;width:auto;top:auto;bottom:8px}}
 
 html.dark .mbar button:disabled{color:var(--sky);opacity:.4}
 html.dark #toast{background:#13223F;border:1px solid var(--line)}
@@ -832,10 +833,14 @@ function drawStats() {
 }
 
 // ---------- 회차 상세 ----------
+function visitTag(r) {  // 이 클래스 N회째 · 4레인 전체 M회(11/20)
+  if (!r.vc) return '';
+  return '<span class="vct">' + r.vc + (r.vp ? '+' : '') + (r.vu || '회') + (r.vt && r.vt > r.vc ? '<small> · 전체 ' + r.vt + '회</small>' : '') + '</span>';
+}
 function rowItem(r, grouped) {
   var meta = [grouped ? '' : r.level, r.phone, r.memo].filter(Boolean).join(' · ');
   var pay = r.group !== 0 ? '' : r.paid ? '<span class="pill ok">결제</span>' : '<span class="pill no">미결제</span>';
-  return '<div class="item tap' + (r.group === 2 ? ' off' : '') + '" onclick="openRow(\'' + esc(r.no) + '\')"><div class="main"><div class="nm">' + esc(r.name) + kindChip(r) + '</div>'
+  return '<div class="item tap' + (r.group === 2 ? ' off' : '') + '" onclick="openRow(\'' + esc(r.no) + '\')"><div class="main"><div class="nm">' + esc(r.name) + kindChip(r) + visitTag(r) + '</div>'
     + '<div class="meta">' + esc(meta || ' ') + '</div></div><div class="amt">' + won(r.price) + '<br>' + pay + '</div></div>';
 }
 function renderSession() {
