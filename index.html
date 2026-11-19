@@ -252,7 +252,7 @@ html:not(.dark) .brd .bc{background:#fff;border-color:var(--line)}
 .brd .mon i b{position:absolute;left:3px;right:3px;bottom:3px;height:3px;border-radius:2px}
 .brd .mon span{font-size:9px;color:var(--sky);text-align:center;font-family:Lexend}
 .brd .gg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.brd .gg div{display:flex;align-items:center;gap:8px;justify-content:center}
-.brd .gg svg{width:52px;height:52px;flex:none}.brd .gg span{font-size:10.5px;color:var(--slate);line-height:1.3}
+.brd .gg svg{width:52px;height:52px;flex:none}.brd .gg span{font-size:10.5px;color:var(--slate);line-height:1.3;font-family:Lexend,Arial;letter-spacing:1.2px;white-space:nowrap}
 .brd .sky{position:relative}.brd .sky svg{width:100%;display:block;max-height:calc(100vh - 230px);min-height:380px}
 .brd .node{cursor:pointer}.brd .node text{font-size:11px;fill:var(--slate)}.brd .node.sel text,.brd .node:hover text{fill:var(--ink)}
 .brd .lg{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:var(--slate);margin-top:4px}
@@ -283,7 +283,7 @@ html:not(.dark) .brd .bc{background:#fff;border-color:var(--line)}
 .brd .stamp{font-size:10.5px;color:var(--sky);text-align:right;margin:-4px 0 8px;font-family:Lexend}
 @media(max-width:1100px){.brd{grid-template-columns:minmax(0,1fr)}.brd .col.c{order:1}.brd .col.r{order:2}.brd .col.l{order:3}}
 .brd .gg div{cursor:pointer;border-radius:10px}.brd .gg div:active{background:rgba(56,211,238,.08)}
-@media(max-width:640px){.brd .gg{grid-template-columns:repeat(4,1fr);gap:4px}.brd .gg div{flex-direction:column;gap:3px}.brd .gg svg{width:48px;height:48px}.brd .gg span{font-size:9.5px;text-align:center;line-height:1.25}.brd .dt{left:8px;right:8px;width:auto;top:auto;bottom:8px}}
+@media(max-width:640px){.brd .gg{grid-template-columns:repeat(4,1fr);gap:4px}.brd .gg div{flex-direction:column;gap:3px}.brd .gg svg{width:48px;height:48px}.brd .gg span{font-size:9.5px;text-align:center;line-height:1.25;letter-spacing:1px}.brd .dt{left:8px;right:8px;width:auto;top:auto;bottom:8px}}
 
 html.dark .mbar button:disabled{color:var(--sky);opacity:.4}
 html.dark #toast{background:#13223F;border:1px solid var(--line)}
@@ -562,10 +562,10 @@ function renderBoard() {
   for (var dd = 1; dd <= BD.days; dd++) mh += '<i class="' + (dd < td ? 'p' : '') + (dd === td ? ' t' : '') + '">' + (cm[dd] ? '<b style="background:' + cm[dd] + '"></b>' : '') + '</i>';
   L += '<div class="bc"><div class="bl">' + Number(BD.today.slice(5, 7)) + '월<b>수업 날</b></div><div class="mon">' + mh + '</div></div>';
   // 가운데: 질서 게이지 + 일 별자리
-  var G = [[O.total ? (O.today || 3) / O.total : 0, BD_C.cyan, O.today || 3, '/' + (O.total || '-'), '오늘 ' + (O.today || 3) + ' · 전체 ' + (O.total || '-')],
-    [O.build ? O.build[0] / O.build[1] : 0, O.build && O.build[0] > O.build[1] ? BD_C.ember : BD_C.teal, O.build ? O.build[0] : '-', '/' + (O.build ? O.build[1] : 2), '큰 공사(셋팅)' + (O.build && O.build[0] > O.build[1] ? '<br>한도 초과' : '')],
-    [(O.doneWeek || 0) / Math.max(1, (O.doneWeek || 0) + (O.openedWeek || 0)), BD_C.teal, O.doneWeek || 0, '연 것 ' + (O.openedWeek || 0), '이번 주 끝낸 것'],
-    [Math.min(1, (B.face || []).length / 8), BD_C.amber, (B.face || []).length, '개', '마주할 것']];
+  var G = [[O.total ? (O.today || 3) / O.total : 0, BD_C.cyan, O.today || 3, '/' + (O.total || '-'), 'TODAY'],
+    [O.build ? O.build[0] / O.build[1] : 0, O.build && O.build[0] > O.build[1] ? BD_C.ember : BD_C.teal, O.build ? O.build[0] : '-', '/' + (O.build ? O.build[1] : 2), 'BUILD'],
+    [(O.doneWeek || 0) / Math.max(1, (O.doneWeek || 0) + (O.openedWeek || 0)), BD_C.teal, O.doneWeek || 0, '연 것 ' + (O.openedWeek || 0), 'DONE'],
+    [Math.min(1, (B.face || []).length / 8), BD_C.amber, (B.face || []).length, '개', 'FACE']];
   var GK = ['today', 'build', 'done', 'face'];
   var C = '<div class="bc" style="padding:8px 12px"><div class="gg">' + G.map(function (g, i) { return '<div onclick="bdList(\'' + GK[i] + '\')">' + bdRing(g[0], g[1], 80, 7, g[2], g[3]) + '<span>' + g[4] + '</span></div>'; }).join('') + '</div></div>';
   C += '<div class="bc sky"><div class="bl">일 지도 · 별 = 프로젝트, 크기 = 남은 할 일, 누르면 자세히<b style="color:var(--cyan);cursor:pointer" onclick="bdDrawer()">전체 ' + (O.total || '') + ' 펼쳐 보기 →</b></div>'
