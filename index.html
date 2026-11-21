@@ -973,8 +973,8 @@ function renderAdd() {
     + '<label class="f">클래스</label><select id="acls" onchange="clsChange()"><option value="">고르기</option>' + classes + '</select>'
     + '<label class="f">날짜</label><select id="adt" onchange="dtChange()"></select><input type="date" id="adt2" style="margin-top:8px;display:none">'
     + '<div id="alvw"><label class="f">레벨</label><input type="text" id="alv" list="alvl" oninput="rehint()" placeholder="없으면 비워두기"><datalist id="alvl"></datalist></div>'
-    + '<label class="f">전화번호</label><input type="tel" id="aph" inputmode="numeric" placeholder="01012345678" oninput="phChange()">'
-    + '<label class="f">이름</label><input type="text" id="anm">'
+    + '<label class="f">이름</label><input type="text" id="anm" oninput="nmChange()" autocomplete="off"><div id="anmatch"></div>'
+    + '<label class="f">전화번호 <span style="font-weight:400;color:var(--slate)">· 온 적 있는 사람은 이름만 넣으면 자동</span></label><input type="tel" id="aph" inputmode="numeric" placeholder="01012345678" oninput="F.autoPh=false;phChange()">'
     + '<div id="ahint"></div>'
     + '<div id="aplanw" style="display:none"><label class="f">결제 방식</label><div class="seg" id="plan"><button class="on" data-v="normal" onclick="seg(this)">일반</button><button data-v="buy" onclick="seg(this)">8회권 구매</button><button data-v="use" onclick="seg(this)">8회권 사용</button></div></div>'
     + '<label class="f">금액</label><input type="number" id="apr" inputmode="numeric" oninput="F.touched=true">'
@@ -1001,6 +1001,33 @@ function clsChange(init) {
   F.touched = false; rehint();
 }
 function dtChange() { $('adt2').style.display = $('adt').value ? 'none' : ''; }
+// 이름 → 번호(11/21): 같은 이름이 번호 하나면 바로 채우고, 여럿이거나 이름 일부만 맞으면 고르게 한다. 손으로 고친 번호는 안 덮는다
+function nmChange() {
+  var q = $('anm').value.replace(/\s/g, ''), box = $('anmatch');
+  clearTimeout(nmChange.t);
+  if (q.length < 2) { box.innerHTML = ''; if (F.autoPh) { $('aph').value = ''; phChange(); } return; }
+  nmChange.t = setTimeout(function () {
+    var dir = D.dir || [], norm = function (x) { return x[0].replace(/\s/g, ''); };
+    var hits = dir.filter(function (x) { return norm(x) === q; }), exact = hits.length > 0;
+    if (!exact) hits = dir.filter(function (x) { return norm(x).indexOf(q) >= 0; });
+    var byPh = {};
+    hits.forEach(function (x) { var o = byPh[x[1]]; if (!o || (x[2] || '') > (o[2] || '')) byPh[x[1]] = x; });
+    var list = Object.keys(byPh).map(function (k) { return byPh[k]; }).sort(function (a, b) { return (b[2] || '') < (a[2] || '') ? -1 : 1; }).slice(0, 6);
+    var last = function (x) { return x[2] ? ' · 마지막 ' + Number(x[2].slice(5, 7)) + '/' + Number(x[2].slice(8, 10)) : ''; };
+    if (exact && list.length === 1) {
+      if (!$('aph').value || F.autoPh) { $('aph').value = list[0][1]; F.autoPh = true; phChange(); }
+      box.innerHTML = '<p class="note" style="margin-top:6px">번호 자동: <span class="num">' + esc(list[0][1]) + '</span>' + esc(last(list[0])) + '</p>';
+      return;
+    }
+    if (F.autoPh) { $('aph').value = ''; F.autoPh = false; phChange(); }
+    box.innerHTML = list.length ? '<p class="note" style="margin-top:6px">' + (exact ? '같은 이름이 ' + list.length + '명이에요. 골라주세요' : '혹시 이 사람?') + '</p><div style="display:flex;flex-wrap:wrap;gap:6px">'
+      + list.map(function (x) { return '<button class="btn sm ghost" onclick="pickPh(\'' + esc(x[0]) + '\',\'' + esc(x[1]) + '\')">' + esc(x[0]) + ' · <span class="num">' + esc(x[1].slice(-4)) + '</span>' + esc(last(x)) + '</button>'; }).join('') + '</div>' : '';
+  }, 200);
+}
+function pickPh(name, ph) {
+  $('anm').value = name; $('aph').value = ph; F.autoPh = true; phChange();
+  $('anmatch').innerHTML = '<p class="note" style="margin-top:6px">번호: <span class="num">' + esc(ph) + '</span></p>';
+}
 function phChange() {
   var d = $('aph').value.replace(/\D/g, '');
   if (d.length === 11) rehint(); else { F.hint = null; $('ahint').innerHTML = ''; }
